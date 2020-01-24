@@ -1,156 +1,199 @@
 package Cricket;
+import org.json.JSONArray;
+//import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 public class Match
 {
-    public ArrayList<Player> teamA;
-    public ArrayList<Player> teamB;
+    private InningData i1;
+    private InningData i2;
+    private Team tossWinner;
+    private Team other; //the team other than toss winner
+    private Choice choice;
+    private enum Choice { BAT, BOWL }
 
     public Match()
     {
-        teamA = new ArrayList<Player>();
-        teamB = new ArrayList<Player>();
+        Team a = new Team(1, "India");
+        Team b = new Team(2, "Australia");
         for(int i=0; i<22; i++)
         {
-            if(i%2==0)
-                teamA.add(new Player(String.valueOf(i), "teamA"));
+            Team team;
+            if(i<11)
+                team = a;
             else
-                teamB.add(new Player(String.valueOf(i), "teamB"));
+                team = b;
+            Player p = new Player(i,String.format("%02d", i), team);
+            team.addPlayer(p);
         }
+
+        //TOSS
+        double n = Math.random();
+        double m = Math.random();
+        Team bat;
+        Team bowl;
+        if(n<0.5)   //a won the Toss
+        {
+            tossWinner = a;
+            other = b;
+            if(m<0.5)
+            {
+                choice = Choice.BAT;
+                bat = a;
+                bowl = b;
+            }
+            else
+            {
+                choice = Choice.BOWL;
+                bat = b;
+                bowl = a;
+            }
+        }
+        else    //B won the toss
+        {
+            tossWinner = b;
+            other = a;
+            if(m<0.5)
+            {
+                choice = Choice.BAT;
+                bat = b;
+                bowl = a;
+            }
+            else
+            {
+                choice = Choice.BOWL;
+                bat = a;
+                bowl = b;
+            }
+        }
+
+        i1 = new InningData(bat, bowl);
+        i2 = new InningData(bowl, bat);
     }
-    public int playInnings(Result result1)
+
+    public int playInning()
     {
         int num;
-        int bowler = 0;
-        int striker = 0;
-        int other = 1;
-        int next=2;
+        boolean flag = true;
         for(int i=0; i<300; i++)
         {
+            if(i%6==1)  i1.getBowlingTeam().overStarted();
             num = (int) (Math.random()*8);
-            result1.numOfBalls();
+            i1.ballPlayed();
             if(num==7)
             {
-                result1.wicketTaken();
-                striker = next;
-                next++;
-                (teamB.get(bowler)).wicketTaken();
-                if(result1.allWicketsTaken()) break;
+                i1.wicketTaken();
+                if(i1.allWicketsTaken()) break;
+            }
+            else if(num>0)  i1.RunsScored(num);
+            if(num>0 && num<7)  flag = false;
+            if(i%6==0 && i>0)
+            {
+                if(flag) i1.getBattingTeam().maidenOver();
+                i1.getBowlingTeam().overPlayed();
+                flag = true;
+            }
+        }
+        return i1.getRunsScored();
+    }
+
+    public Team playInning(int target)
+    {
+        Team winningTeam = null;
+        boolean flag = true;
+        for(int i=0; i<300 && i2.getRunsScored()<=target; i++)
+        {
+            if(i%6==1)  i2.getBowlingTeam().overStarted();
+            int num = (int) (Math.random()*8);
+            i2.ballPlayed();
+            if(num==7)
+            {
+                i2.wicketTaken();
+                if(i2.allWicketsTaken()) break;
             }
             else if(num==0) continue;
-            else
-            {
-                result1.RunsScored(num);
-                (teamA.get(striker)).runsScored(num);
-                if(num!=4 && num!=6)
-                {
-                    (teamA.get(striker)).runsScored(num);
-                    if(num%2==1)
-                    {
-                        int temp = striker;
-                        striker = other;
-                        other = temp;
-                    }
-                }
-            }
+            else    i2.RunsScored(num);
+            if(num>0 && num<7)  flag = false;
             if(i%6==0 && i>0)
             {
-                bowler = (bowler+1)%11;
-                int temp = striker;
-                striker = other;
-                other = temp;
+                if(flag) i1.getBattingTeam().maidenOver();
+                i2.getBowlingTeam().overPlayed();
+                flag = true;
             }
+            if(i2.getRunsScored()>target) winningTeam = i2.getBattingTeam();
+            else if(i2.getRunsScored()<target) winningTeam = i2.getBowlingTeam();
         }
-        return result1.getRunsScored()+1;
+        return winningTeam;
     }
-    public void playInnings(Result result2, int target)
+    public String printStats(InningData i)
     {
-        int num;
-        int bowler = 0;
-        int striker = 0;
-        int other = 1;
-        int next=2;
-        for(int i=0; i<300 && result2.getRunsScored()<=target; i++)
-        {
-            num = (int) (Math.random()*8);
-            result2.numOfBalls();
-            if(num==7)
-            {
-                result2.wicketTaken();
-                striker = next;
-                next++;
-                (teamA.get(bowler)).wicketTaken();
-                if(result2.allWicketsTaken()) break;
-            }
-            else
-            {
-                result2.RunsScored(num);
-                (teamB.get(striker)).runsScored(num);
-                if(num!=4 && num!=6)
-                {
-                    (teamB.get(striker)).runsScored(num);
-                    if(num%2==1)
-                    {
-                        int temp = striker;
-                        striker = other;
-                        other = temp;
-                    }
-                }
-            }
-            if(i%6==0 && i>0)
-            {
-                bowler = (bowler+1)%11;
-                int temp = striker;
-                striker = other;
-                other = temp;
-            }
-
-            String winningTeam;
-            if(result2.getRunsScored()>target)
-                winningTeam = "TeamB";
-            else if(result2.getRunsScored()==target)
-                winningTeam = "Tied";
-            else
-                winningTeam = "TeamA";
-            result2.setWinningTeam(winningTeam);
-        }
-    }
-    public String printStats(Result result1)
-    {
-        ArrayList<String> rs1 = result1.stats();
+        ArrayList<Integer> rs1 = i.stats();
         String result = rs1.get(0) + "/" + rs1.get(1) + "(";
-        float noOfBalls = Float.parseFloat(rs1.get(2));
+        float noOfBalls = (float) rs1.get(2);
         float overs = Math.floorDiv((int) noOfBalls, 6);
         overs += (noOfBalls - overs*6)/10;
         result += (String.format("%,.1f", overs) + ")");
         return result;
     }
-
-    public void teamAStats()
+    public String printWin(Team winningTeam, int target)
     {
-        for( Player p: teamA )
-            System.out.println(p);
+        try{
+            if(winningTeam.getID() == tossWinner.getID())
+            {
+                if(choice==Choice.BAT) return (winningTeam.getName() + " won by " + (target-i2.getRunsScored()) + " runs!");
+                else return (winningTeam.getName() + " won by " + (10-i2.getWicketsTaken()) + " wickets!");
+            }
+            else
+            {
+                if(choice==Choice.BAT)  return (winningTeam.getName() + " won by " + (10-i2.getWicketsTaken()) + " wickets!");
+                else return (winningTeam.getName() + " won by " + (target-i2.getRunsScored()) + " runs!");
+            }
+        }
+        catch (Exception e)
+        {
+            return "Match Tied";
+        }
+
     }
-    public void teamBStats()
+    public String getBattingTeamName(boolean bool)  //true->firstInning, false->secondInning
     {
-        for( Player p: teamB )
-            System.out.println(p);
+        if(bool)     //FirstInning
+        {
+            if(choice==Choice.BAT)  return tossWinner.getName();
+            else    return other.getName();
+        }
+        //Second Inning
+        if(choice==Choice.BAT)  return other.getName();
+        else    return tossWinner.getName();
     }
 
-    public static String go()
+    public static JSONArray go()
     {
         Match match = new Match();
-        Result result1 = new Result(0, 0, 0, "Na");
-        Result result2 = new Result(0, 0, 0, "Na");
-        String display = "Team A : ";
+        int target = match.playInning();
+        Team winningTeam = match.playInning(target);
+        JSONArray jsArray = new JSONArray();
+        ArrayList<PlayersInfo> list = new ArrayList<>();
 
-        int target = match.playInnings(result1);
-        match.playInnings(result2, target);
+//        String display = match.tossWinner.getName() + " won the toss and chose to " + match.choice;// + "\n";
+//        display = match.getBattingTeamName(true) + " : "; // For first inning
+//        display += display + match.printStats1();// + "\n";
+//        display = match.getBattingTeamName(false) + " : "; // For second inning
+//        display += match.printStats2();// + "\n";
+//        display = match.printWin(winningTeam, target);
 
-        display = display + match.printStats(result1) + " <br> " + "Team B : ";
-        display += (match.printStats(result2) + " <br>");
-        display += result2.printWin(target);
-        return display;
+        jsArray.put(match.tossWinner.getName() + " won the toss and chose to " + match.choice);// + "\n");
+        jsArray.put(match.getBattingTeamName(true) + " : "+ match.printStats(match.i1));
+        jsArray.put(match.getBattingTeamName(false) + " : " + match.printStats(match.i2));
+        jsArray.put(match.printWin(winningTeam, target));
+
+
+        match.tossWinner.addPlayers(list);
+        match.other.addPlayers(list);
+        for (int i = 0; i < list.size(); i++)
+            jsArray.put(list.get(i));
+        return jsArray;
     }
 
 }
