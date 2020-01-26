@@ -3,6 +3,8 @@ package Cricket;
 public class PlayersInfo
 {
     public String name;
+    public Player.Type type;
+    public int rating;
     public int noOfBalls;
     public int noOfRuns;
     public int noOfBoundaries;
@@ -10,6 +12,7 @@ public class PlayersInfo
     public int runsGiven;
     public int wicketsTaken;
     public int maidenOvers;
+
     public PlayersInfo(Player p)
     {
         name = p.getName();
@@ -20,5 +23,7 @@ public class PlayersInfo
         runsGiven = p.getRunsGiven();
         wicketsTaken = p.getWicketsTaken();
         maidenOvers = p.getMaidenOvers();
+        type = p.getType();
+        rating = p.getRating();
     }
 }

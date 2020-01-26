@@ -38,7 +38,15 @@ public class InningData
         bowlingTeam.ballPlayed();
     }
     public boolean allWicketsTaken() { return (wicketsTaken == 10) ;}
-    public void RunsScored(int runs)
+    public int runsScored()
+    {
+        int runs = battingTeam.runsScored();
+        if(runs==7) return runs;
+        bowlingTeam.runsGiven(runs);
+        runsScored += runs;
+        return runs;
+    }
+    public void runsScored(int runs)
     {
         runsScored += runs;
         battingTeam.runsScored(runs);

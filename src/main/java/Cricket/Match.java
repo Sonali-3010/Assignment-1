@@ -17,15 +17,22 @@ public class Match
     {
         Team a = new Team(1, "India");
         Team b = new Team(2, "Australia");
-        for(int i=0; i<22; i++)
+        int t, rating=1;
+        for(int i=0; i<11; i++)
         {
-            Team team;
-            if(i<11)
-                team = a;
-            else
-                team = b;
-            Player p = new Player(i,String.format("%02d", i), team);
-            team.addPlayer(p);
+            t = i<8 && i>4 ? 1 : 2;
+            rating = 1;
+            if(t==1)     rating = (int) (Math.random() * 3) + 2;
+            Player p = new Player(i,String.format("%02d", i), a, t, rating);
+            a.addPlayer(p);
+        }
+        for(int i=0; i<11; i++)
+        {
+            t = i<8 && i>4 ? 1 : 2;
+            rating = 1;
+            if(t==1)     rating = (int) (Math.random() * 3) + 2;;
+            Player p = new Player(i+11,String.format("%02d", i+11), b, t, rating);
+            b.addPlayer(p);
         }
 
         //TOSS
@@ -74,20 +81,19 @@ public class Match
 
     public int playInning()
     {
-        int num;
+        int runs;
         boolean flag = true;
         for(int i=0; i<300; i++)
         {
             if(i%6==1)  i1.getBowlingTeam().overStarted();
-            num = (int) (Math.random()*8);
+            runs = i1.runsScored();
             i1.ballPlayed();
-            if(num==7)
+            if(runs==7)
             {
                 i1.wicketTaken();
                 if(i1.allWicketsTaken()) break;
             }
-            else if(num>0)  i1.RunsScored(num);
-            if(num>0 && num<7)  flag = false;
+            if(runs>0 && runs<7)  flag = false;
             if(i%6==0 && i>0)
             {
                 if(flag) i1.getBattingTeam().maidenOver();
@@ -102,19 +108,18 @@ public class Match
     {
         Team winningTeam = null;
         boolean flag = true;
+        int runs;
         for(int i=0; i<300 && i2.getRunsScored()<=target; i++)
         {
             if(i%6==1)  i2.getBowlingTeam().overStarted();
-            int num = (int) (Math.random()*8);
+            runs = i2.runsScored();
             i2.ballPlayed();
-            if(num==7)
+            if(runs==7)
             {
                 i2.wicketTaken();
                 if(i2.allWicketsTaken()) break;
             }
-            else if(num==0) continue;
-            else    i2.RunsScored(num);
-            if(num>0 && num<7)  flag = false;
+            if(runs>0 && runs<7)  flag = false;
             if(i%6==0 && i>0)
             {
                 if(flag) i1.getBattingTeam().maidenOver();

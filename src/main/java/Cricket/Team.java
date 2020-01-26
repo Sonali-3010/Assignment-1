@@ -59,6 +59,24 @@ public class Team
     }
     public BattingScoreCard getBattingScoreCard() { return battingScoreCard; }
     public BowlingScoreCard getBowlingScoreCard() { return bowlingScoreCard; }
+    public int runsScored()
+    {
+        int runs = team.get(striker).runsScored();
+        if(runs==7) return runs;
+
+        battingScoreCard.runsScored(runs);
+        team.get(striker).ballPlayed();
+        if(runs!=4 && runs!=6)
+        {
+            (team.get(other)).runsScored(runs);
+            team.get(other).ballPlayed();;
+            if(runs%2==1)
+                strikeChange();
+        }
+        else
+            boundaryScored();
+        return runs;
+    }
 
     //Batting
     public int getNoOfBalls()       { return battingScoreCard.getNoOfBalls();      }
