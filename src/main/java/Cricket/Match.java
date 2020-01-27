@@ -20,17 +20,19 @@ public class Match
         int t, rating=1;
         for(int i=0; i<11; i++)
         {
-            t = i<8 && i>4 ? 1 : 2;
+            t = i<3 ? 3 : (i<6 ? 1 : 2);
             rating = 1;
-            if(t==1)     rating = (int) (Math.random() * 3) + 2;
+            if(t==1)    rating = (int) (Math.random() * 3) + 2;
+            if(t==3)    rating=2;
             Player p = new Player(i,String.format("%02d", i), a, t, rating);
             a.addPlayer(p);
         }
         for(int i=0; i<11; i++)
         {
-            t = i<8 && i>4 ? 1 : 2;
+            t = i<3 ? 3 : (i<6 ? 1 : 2);
             rating = 1;
-            if(t==1)     rating = (int) (Math.random() * 3) + 2;;
+            if(t==1)    rating = (int) (Math.random() * 3) + 2;
+            if(t==3)    rating=2;
             Player p = new Player(i+11,String.format("%02d", i+11), b, t, rating);
             b.addPlayer(p);
         }
@@ -172,6 +174,24 @@ public class Match
         if(choice==Choice.BAT)  return other.getName();
         else    return tossWinner.getName();
     }
+    public void inningScoreCard(ArrayList<PlayersBattingInfo> a1, ArrayList<PlayersBowlingInfo> b1,
+                                ArrayList<PlayersBattingInfo> a2, ArrayList<PlayersBowlingInfo> b2)
+    {
+        i1.getBattingTeam().addBatsmen(a1);
+        i1.getBowlingTeam().addBowlers(b1);
+        i2.getBattingTeam().addBatsmen(a2);
+        i2.getBowlingTeam().addBowlers(b2);
+    }
+    public String putBattingTeam(int inning)
+    {
+        if(inning==1)   return i1.getBattingTeam().getName();
+        return i2.getBattingTeam().getName();
+    }
+    public String putBowlingTeam(int inning)
+    {
+        if(inning==1)   return i1.getBowlingTeam().getName();
+        return i2.getBowlingTeam().getName();
+    }
 
     public static JSONArray go()
     {
@@ -179,25 +199,37 @@ public class Match
         int target = match.playInning();
         Team winningTeam = match.playInning(target);
         JSONArray jsArray = new JSONArray();
-        ArrayList<PlayersInfo> list = new ArrayList<>();
-
-//        String display = match.tossWinner.getName() + " won the toss and chose to " + match.choice;// + "\n";
-//        display = match.getBattingTeamName(true) + " : "; // For first inning
-//        display += display + match.printStats1();// + "\n";
-//        display = match.getBattingTeamName(false) + " : "; // For second inning
-//        display += match.printStats2();// + "\n";
-//        display = match.printWin(winningTeam, target);
+        ArrayList<PlayersBattingInfo> firstInningBatsmen = new ArrayList<>();
+        ArrayList<PlayersBowlingInfo> firstInningBowlers = new ArrayList<>();
+        ArrayList<PlayersBattingInfo> secondInningBatsmen = new ArrayList<>();
+        ArrayList<PlayersBowlingInfo> secondInningBowlers = new ArrayList<>();
 
         jsArray.put(match.tossWinner.getName() + " won the toss and chose to " + match.choice);// + "\n");
         jsArray.put(match.getBattingTeamName(true) + " : "+ match.printStats(match.i1));
         jsArray.put(match.getBattingTeamName(false) + " : " + match.printStats(match.i2));
         jsArray.put(match.printWin(winningTeam, target));
 
+        match.inningScoreCard(firstInningBatsmen, firstInningBowlers, secondInningBatsmen, secondInningBowlers);
+        jsArray.put("");
+        jsArray.put("First Inning:");
+        jsArray.put(match.putBattingTeam(1));
+        for(int i = 0; i < firstInningBatsmen.size(); i++)
+            jsArray.put(firstInningBatsmen.get(i));
 
-        match.tossWinner.addPlayers(list);
-        match.other.addPlayers(list);
-        for (int i = 0; i < list.size(); i++)
-            jsArray.put(list.get(i));
+        jsArray.put(match.putBowlingTeam(1));
+        for(int i = 0; i < firstInningBowlers.size(); i++)
+            jsArray.put(firstInningBowlers.get(i));
+
+        jsArray.put("");
+        jsArray.put("Second Inning:");
+        jsArray.put(match.putBattingTeam(2));
+        for(int i = 0; i < secondInningBatsmen.size(); i++)
+            jsArray.put(secondInningBatsmen.get(i));
+
+        jsArray.put(match.putBowlingTeam(2));
+        for(int i = 0; i < secondInningBowlers.size(); i++)
+            jsArray.put(secondInningBowlers.get(i));
+
         return jsArray;
     }
 

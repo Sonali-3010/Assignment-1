@@ -9,7 +9,7 @@ public class Player
     private BowlingScoreCard bowlingScoreCard;
     private int rating;
     private Type type;
-    public enum Type { BATSMAN, BOWLER }
+    public enum Type { BATSMAN, BOWLER, ALLROUNDER }
 
     private int[] freq = new int[]{1,1,1,1,1,1,1,1};
     private int[] arr  = new int[]{0,1,2,3,4,5,6,7};
@@ -19,7 +19,7 @@ public class Player
         this.playerID = playerID;
         this.name = name;
         this.team = team;
-        this.type = t==1 ? Type.BATSMAN : Type.BOWLER;
+        this.type = (t==1 ? Type.BATSMAN : (t==2 ? Type.BOWLER : Type.ALLROUNDER));
         this.rating = rating;
         battingScoreCard = new BattingScoreCard();
         bowlingScoreCard = new BowlingScoreCard();
@@ -30,9 +30,11 @@ public class Player
             prefix[i] = prefix[i - 1] + freq[i];
     }
     public String getName() { return name; }
-
     public int getRating() { return rating; }
     public Type getType() { return type; }
+    public boolean isBowler() { return type == Type.BOWLER || type==Type.ALLROUNDER; }
+    public boolean isAllRounder() { return type==Type.ALLROUNDER; }
+    public boolean isBatsman() { return type == Type.BATSMAN || type == Type.ALLROUNDER; }
 
     public BattingScoreCard getBattingScoreCard() { return battingScoreCard; }
     public BowlingScoreCard getBowlingScoreCard() { return bowlingScoreCard; }

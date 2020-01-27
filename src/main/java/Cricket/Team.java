@@ -8,12 +8,13 @@ public class Team
     private String name;
     private Player captain;
     private ArrayList<Player> team;
-    private int bowler = 0;
+    private int bowler = 6;
     private int striker = 0;
     private int other = 1; //The Batsman who isn't Striking
     private int next=2;
     private BattingScoreCard battingScoreCard;
     private BowlingScoreCard bowlingScoreCard;
+    private ArrayList<Integer>  bowlingOrder;
 
     public Team(int teamID, String name)
     {
@@ -22,6 +23,7 @@ public class Team
         team = new ArrayList<>();
         battingScoreCard = new BattingScoreCard();
         bowlingScoreCard = new BowlingScoreCard();
+        bowlingOrder = new ArrayList<>();
     }
     public Team(int teamID, String name, Player cap)
     {
@@ -41,11 +43,6 @@ public class Team
     public Player getBowler() { return team.get(bowler); }
     public Player getStriker() { return team.get(striker); }
     public Player getOther() { return team.get(other); }
-    public Player getNextBowler()
-    {
-        bowler = (bowler+1)%11;
-        return this.getBowler();
-    }
     public void strikerOut()
     {
         striker = next;
@@ -77,6 +74,14 @@ public class Team
             boundaryScored();
         return runs;
     }
+    public boolean isBowlingLimitReached()
+    {
+        for(int i=0; i<11 && team.get(i).isBowler(); i++)
+            if(team.get(i).getNoOfOvers()<10)
+                return false;
+        return true;
+    }
+
 
     //Batting
     public int getNoOfBalls()       { return battingScoreCard.getNoOfBalls();      }
@@ -108,27 +113,32 @@ public class Team
     public void wicketTaken()       { bowlingScoreCard.wicketTaken(); team.get(bowler).wicketTaken(); }
     public void maidenOver()        { bowlingScoreCard.maidenOver(); team.get(bowler).maidenOver(); }
     public void overStarted()       { team.get(bowler).overPlayed(); bowlingScoreCard.overPlayed(); }
-    public void overPlayed()        { bowler = (bowler+1)%11; }
-
-    public String printPlayerBat()
+    public void overPlayed()
     {
-        String print = "";
-        for(int i=0; i<11; i++)
-            print += team.get(i).printBat();
-        return print;
+        bowler = (bowler+1)%11;
+        if(!isBowlingLimitReached())
+            while(!team.get(bowler).isBowler() || team.get(bowler).getNoOfOvers()>10)
+                bowler = (bowler+1)%11;
+        else
+            while (team.get(bowler).getNoOfOvers()>10)
+                bowler = (bowler+1)%11;
+        if(team.get(bowler).getNoOfOvers()==0)
+            bowlingOrder.add(bowler);
     }
-    public void addPlayers(ArrayList<PlayersInfo> a)
+
+    public void addBatsmen(ArrayList<PlayersBattingInfo> a)
     {
         for(int i=0; i<11; i++)
         {
-            a.add(new PlayersInfo(team.get(i)));
+            if(team.get(i).getNoOfBalls()>0)
+                a.add(new PlayersBattingInfo(team.get(i)));
         }
     }
-    /*public String printPlayerBowl()
+    public void addBowlers(ArrayList<PlayersBowlingInfo> a)
     {
-        String print = "";
-        for(int i=0; i<11; i++)
-            print += team.get(i).printBowl();
-        return print;
-    }*/
+        for(int i=0; i<bowlingOrder.size(); i++)
+        {
+            a.add(new PlayersBowlingInfo(team.get(bowlingOrder.get(i))));
+        }
+    }
 }
